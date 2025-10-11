@@ -83,39 +83,58 @@ Preferred communication style: Simple, everyday language.
 ## Stripe Integration Configuration
 
 ### Current Status
-✅ **Fully Configured and Operational** - Stripe subscription integration is working in Test Mode with proper checkout flow.
+✅ **Live Mode - Production Ready** - Stripe subscription integration is fully configured with Live Mode keys and products.
 
 ### Environment Configuration
 
-**Development/Testing (Current Setup):**
-```bash
-TESTING_STRIPE_SECRET_KEY=sk_test_...  # Test Mode secret key (backend)
-VITE_STRIPE_PUBLIC_KEY=pk_test_...     # Test Mode publishable key (frontend)
-```
-
-**Production (When Ready):**
+**Production (Current Setup):**
 ```bash
 STRIPE_SECRET_KEY=sk_live_...          # Live Mode secret key (backend)
 VITE_STRIPE_PUBLIC_KEY=pk_live_...     # Live Mode publishable key (frontend)
+STRIPE_WEBHOOK_SECRET=whsec_...        # Webhook signing secret
 ```
 
-### Subscription Plans
-Three subscription tiers configured in database with Stripe Test Mode price IDs:
-- **Basic Plan**: €1/month (price_1SFwUsCM6dquPqV6qXBBoRCf)
-- **Professional Plan**: €2/month (price_1SFwVMCM6dquPqV6cAYyyCXy)
-- **Enterprise Plan**: €3/month (price_1SFwVeCM6dquPqV6iBIRHPaf)
+**Development/Testing (Available for Testing):**
+```bash
+TESTING_STRIPE_SECRET_KEY=sk_test_...  # Test Mode secret key (backend)
+TESTING_VITE_STRIPE_PUBLIC_KEY=pk_test_... # Test Mode publishable key (frontend)
+```
+
+### Subscription Plans (Live Mode)
+Three subscription tiers configured in database with Stripe Live Mode price IDs:
+- **Basic Plan**: €1/month (price_1SCd6VCR3rcAGMiHsrxja8q6)
+  - Product ID: prod_T8uw20uamZuXhf
+- **Professional Plan**: €2/month (price_1SCd6VCR3rcAGMiHImbauvFQ)
+  - Product ID: prod_T8uwJQJ0co4nqT
+- **Enterprise Plan**: €3/month (price_1SCd6WCR3rcAGMiHhmowXDpU)
+  - Product ID: prod_T8uwBWXIfVICZU
+
+### Subscription Enforcement (Updated: October 11, 2025)
+
+**Mandatory Subscription Policy:**
+- ✅ Users MUST subscribe to access ORION features - no free trial or free tier
+- ✅ After login, users without active subscription are redirected to /pricing
+- ✅ All protected routes (Projects, Scanning, Analytics, Reports, Chat) require active subscription
+- ✅ SubscriptionGuard blocks unauthenticated users and users without subscription tiers
+- ✅ No default tier assignment - explicit subscription required
+
+**Protected Routes:**
+- `/projects` - Requires DASHBOARD access (all tiers)
+- `/scanning` - Requires SCANNING access (all tiers)
+- `/analytics` - Requires ANALYTICS access (all tiers)
+- `/reports` - Requires REPORTS access (Professional/Enterprise only)
+- `/chat` - Requires COPILOT access (Professional/Enterprise only)
 
 ### Key Implementation Details
 - Backend uses fallback logic: `STRIPE_SECRET_KEY || TESTING_STRIPE_SECRET_KEY`
 - Price IDs stored in database `subscription_plans` table
 - Frontend loads Stripe.js with `VITE_STRIPE_PUBLIC_KEY`
 - Checkout flow: POST `/api/v1/subscription/checkout` → redirects to Stripe Checkout
+- Webhook endpoint: `/api/stripe/webhook` (handles checkout.session.completed, subscription events)
 - Error handling includes user-friendly toast messages
 
-### Testing Before Production Launch
-Before switching to Live Mode:
-1. Test complete checkout flow with [Stripe test cards](https://stripe.com/docs/testing)
-2. Verify webhook handling for successful payments
-3. Test subscription cancellation and renewal flows
-4. Update environment variables to Live Mode keys
-5. Update database price IDs to Live Mode prices from Stripe dashboard
+### Stripe Products Configuration
+Products are configured in Stripe Dashboard (https://dashboard.stripe.com/products) with:
+- Metadata: `app=orion-saas`, `tier={basic|professional|enterprise}`
+- Recurring billing: Monthly
+- Currency: EUR
