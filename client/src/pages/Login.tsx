@@ -61,13 +61,32 @@ export default function Login() {
       
       return await response.json();
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.success && response.token) {
         // Store JWT token in localStorage
         localStorage.setItem("auth_token", response.token);
         
-        // Redirect to projects page
-        setLocation("/projects");
+        // Check if user has active subscription
+        try {
+          const subRes = await fetch('/api/v1/subscription/current', {
+            headers: {
+              'Authorization': `Bearer ${response.token}`
+            }
+          });
+          const subData = await subRes.json();
+          
+          // If user has active subscription, go to projects
+          // Otherwise, redirect to pricing to subscribe
+          if (subData?.subscription?.status === 'active') {
+            setLocation("/projects");
+          } else {
+            setLocation("/pricing");
+          }
+        } catch (error) {
+          // On error, redirect to pricing (safe default for new users)
+          console.error('Failed to check subscription:', error);
+          setLocation("/pricing");
+        }
       }
     },
   });
