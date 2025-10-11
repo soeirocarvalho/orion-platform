@@ -135,12 +135,21 @@ export function SubscriptionGuard({
     return <>{children}</>;
   }
 
-  // If no user, redirect to login (handled by existing auth system)
+  // Block access if no user is authenticated
   if (!user) {
-    return <>{children}</>;
+    return null;
   }
 
-  const userTier = (user as any)?.subscriptionTier || 'basic';
+  // Get user's subscription tier - NO DEFAULT, require explicit tier
+  const userTier = (user as any)?.subscriptionTier;
+  
+  // If user has no subscription tier, they need to subscribe
+  if (!userTier) {
+    // Redirect to pricing page
+    window.location.href = '/pricing';
+    return null;
+  }
+
   const userPermissions = TIER_PERMISSIONS[userTier as keyof typeof TIER_PERMISSIONS];
 
   // Check page access
@@ -177,8 +186,9 @@ export function SubscriptionGuard({
 export function useSubscriptionAccess() {
   const { user } = useAuth();
   
-  const userTier = (user as any)?.subscriptionTier || 'basic';
-  const userPermissions = TIER_PERMISSIONS[userTier as keyof typeof TIER_PERMISSIONS];
+  // Get user's subscription tier - NO DEFAULT, require explicit tier
+  const userTier = (user as any)?.subscriptionTier;
+  const userPermissions = userTier ? TIER_PERMISSIONS[userTier as keyof typeof TIER_PERMISSIONS] : TIER_PERMISSIONS.basic;
 
   const hasPageAccess = (page: PageAccess) => {
     return userPermissions.pages.includes(page);
