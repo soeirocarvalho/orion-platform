@@ -68,9 +68,21 @@ function Router() {
       <Sidebar />
       <main className="flex-1 overflow-hidden">
         <Switch>
-          <Route path="/projects" component={Projects} />
-          <Route path="/scanning" component={Scanning} />
-          <Route path="/analytics" component={Analytics} />
+          <Route path="/projects">
+            <SubscriptionGuard requiredPage={PAGE_ACCESS.DASHBOARD}>
+              <Projects />
+            </SubscriptionGuard>
+          </Route>
+          <Route path="/scanning">
+            <SubscriptionGuard requiredPage={PAGE_ACCESS.SCANNING}>
+              <Scanning />
+            </SubscriptionGuard>
+          </Route>
+          <Route path="/analytics">
+            <SubscriptionGuard requiredPage={PAGE_ACCESS.ANALYTICS}>
+              <Analytics />
+            </SubscriptionGuard>
+          </Route>
           <Route path="/reports">
             <SubscriptionGuard requiredPage={PAGE_ACCESS.REPORTS}>
               <Reports />
