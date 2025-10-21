@@ -668,9 +668,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       
-      // Ensure user has a default project (user onboarding)
-      await storage.ensureUserDefaultProject(userId);
-      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -1030,10 +1027,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         interval: 'month', // Default interval
         features: Array.isArray(plan.features) ? plan.features : [],
         // Map limits object to flattened fields expected by frontend
-        aiQueriesLimit: (plan.limits as any)?.aiQueriesPerMonth || 0,
-        projectsLimit: (plan.limits as any)?.projects || 0,
-        forcesLimit: (plan.limits as any)?.drivingForces || 0,
-        usersLimit: (plan.limits as any)?.users || 1,
+        aiQueriesLimit: (plan.limits as any)?.aiQueriesLimit || 0,
+        projectsLimit: (plan.limits as any)?.projectsLimit || 0,
+        forcesLimit: (plan.limits as any)?.forcesLimit || 0,
+        usersLimit: (plan.limits as any)?.usersLimit || 1,
         apiAccess: (plan.limits as any)?.apiAccess || false,
         customReports: (plan.limits as any)?.customReports || false,
         priority: plan.tier === 'basic' ? 1 : plan.tier === 'professional' ? 2 : 3
@@ -1081,10 +1078,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currency: plan.currency,
           interval: 'month',
           features: Array.isArray(plan.features) ? plan.features : [],
-          aiQueriesLimit: (plan.limits as any)?.aiQueriesPerMonth || 0,
-          projectsLimit: (plan.limits as any)?.projects || 0,
-          forcesLimit: (plan.limits as any)?.drivingForces || 0,
-          usersLimit: (plan.limits as any)?.users || 1,
+          aiQueriesLimit: (plan.limits as any)?.aiQueriesLimit || 0,
+          projectsLimit: (plan.limits as any)?.projectsLimit || 0,
+          forcesLimit: (plan.limits as any)?.forcesLimit || 0,
+          usersLimit: (plan.limits as any)?.usersLimit || 1,
           apiAccess: (plan.limits as any)?.apiAccess || false,
           customReports: (plan.limits as any)?.customReports || false,
           priority: plan.tier === 'basic' ? 1 : plan.tier === 'professional' ? 2 : 3

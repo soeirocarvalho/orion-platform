@@ -25,20 +25,16 @@ import {
   Trash2,
   Copy,
   Crown,
-  Info,
-  Globe,
-  TrendingUp,
-  AlertTriangle
+  Info
 } from "lucide-react";
 import type { z } from "zod";
-import type { Project, DrivingForce, ProjectType } from "@shared/schema";
+import type { Project, DrivingForce } from "@shared/schema";
 
 type InsertProject = z.infer<typeof insertProjectSchema>;
 
 export default function Projects() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedProjectType, setSelectedProjectType] = useState<ProjectType>("new_project");
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { setCurrentProject } = useAppActions();
@@ -165,14 +161,9 @@ export default function Projects() {
     defaultValues: {
       name: "",
       description: "",
-      projectType: selectedProjectType,
+      projectType: "new_project",
     },
   });
-
-  // Update form when project type changes
-  useEffect(() => {
-    form.setValue("projectType", selectedProjectType);
-  }, [selectedProjectType, form]);
 
   const onSubmit = (data: InsertProject) => {
     createMutation.mutate(data);
@@ -217,110 +208,10 @@ export default function Projects() {
                 New Project
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Create New Project</DialogTitle>
               </DialogHeader>
-              
-              {/* Project Type Selection */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Choose Project Type</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Full ORION Scanning */}
-                    <Card 
-                      className={`p-4 cursor-pointer border-2 transition-all hover:shadow-md ${
-                        selectedProjectType === 'full_orion' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      onClick={() => setSelectedProjectType('full_orion')}
-                      data-testid="project-type-full-orion"
-                    >
-                      <div className="flex items-start space-x-3">
-                        <Globe className={`w-5 h-5 mt-0.5 ${
-                          selectedProjectType === 'full_orion' ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium">Full ORION Scanning</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Complete strategic intelligence database (~30K forces)
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-
-                    {/* Megatrends Project */}
-                    <Card 
-                      className={`p-4 cursor-pointer border-2 transition-all hover:shadow-md ${
-                        selectedProjectType === 'megatrends' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      onClick={() => setSelectedProjectType('megatrends')}
-                      data-testid="project-type-megatrends"
-                    >
-                      <div className="flex items-start space-x-3">
-                        <TrendingUp className={`w-5 h-5 mt-0.5 ${
-                          selectedProjectType === 'megatrends' ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium">Megatrends Project</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Focus on 20 core megatrends
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-
-                    {/* Early Warning System */}
-                    <Card 
-                      className={`p-4 cursor-pointer border-2 transition-all hover:shadow-md ${
-                        selectedProjectType === 'early_warning' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      onClick={() => setSelectedProjectType('early_warning')}
-                      data-testid="project-type-early-warning"
-                    >
-                      <div className="flex items-start space-x-3">
-                        <AlertTriangle className={`w-5 h-5 mt-0.5 ${
-                          selectedProjectType === 'early_warning' ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium">Early Warning System</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Weak signals and emerging trends
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-
-                    {/* New Project */}
-                    <Card 
-                      className={`p-4 cursor-pointer border-2 transition-all hover:shadow-md ${
-                        selectedProjectType === 'new_project' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      onClick={() => setSelectedProjectType('new_project')}
-                      data-testid="project-type-new-project"
-                    >
-                      <div className="flex items-start space-x-3">
-                        <Plus className={`w-5 h-5 mt-0.5 ${
-                          selectedProjectType === 'new_project' ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium">New Project</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Build your custom collection (starts empty)
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                </div>
-              </div>
 
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

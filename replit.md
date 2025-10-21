@@ -32,6 +32,48 @@ Preferred communication style: Simple, everyday language.
 - **Data Types**: Support for arrays, JSON objects, and vector references.
 - **Migration System**: Drizzle Kit for schema versioning.
 
+### Database Auto-Seed System (Added: October 16, 2025)
+
+**Production Database Initialization:**
+- ✅ **Automatic seeding** on first server startup when database is empty
+- ✅ **Zero-downtime deployment** - no manual CSV imports needed
+- ✅ **29,770 driving forces** imported from bundled JSON seed file
+- ✅ **Idempotent operation** - safe to run multiple times, only seeds if needed
+
+**Implementation Details:**
+- **Seed File**: `server/seed-data/driving-forces.json` (176MB)
+  - Exported from development database on October 16, 2025
+  - Contains complete driving forces dataset with all metadata
+  - Bundled with deployment (not gitignored)
+- **Seeder Service**: `server/services/database-seeder.ts`
+  - Checks default project on startup
+  - Imports in batches of 500 forces for optimal performance
+  - Displays progress logging: batch completion percentage
+  - Validates type distribution after import
+- **Startup Sequence** (in `server/index.ts`):
+  1. Ensure default project exists
+  2. **Auto-seed if database empty** ← NEW
+  3. Run integrity validation
+  4. Start server
+
+**Force Type Distribution:**
+- Weak Signals: 458
+- Signals: 26,883
+- Megatrends: 21
+- Trends: 2,205
+- Wildcards: 203
+
+**Why This Solution:**
+- Previous issue: TypeScript backend couldn't load `.parquet/.pkl` files, causing production to start with empty database
+- Solution: Export to JSON format compatible with TypeScript, auto-import on startup
+- Benefit: Production database automatically initializes with full dataset on first deployment
+
+**Critical Bug Fix (October 16, 2025):**
+- **Problem**: Original implementation checked for ">0 forces" - if import failed mid-way (e.g., batch 30/60), database would be permanently stuck with partial data
+- **Solution**: Now verifies **exact count match** (29,770/29,770) and auto-recovers from partial states
+- **Self-Healing**: If partial dataset detected (e.g., 15,000/29,770), seeder clears incomplete data and retries full import
+- **Verification**: After import, validates final count matches seed file and throws error if incomplete
+
 ### Authentication and Authorization
 - **Session Management**: Express sessions with PostgreSQL session store (connect-pg-simple).
 - **Security**: CORS configuration and request validation using Zod.
@@ -49,6 +91,27 @@ Preferred communication style: Simple, everyday language.
 ### UI/UX Decisions
 - Custom ORION logo integrated throughout the application interface.
 - Dark/light mode theming support.
+
+### Project Management UX (Updated: October 16, 2025)
+
+**Simplified Project Creation:**
+- Removed confusing 4-option project type selector (Full ORION, Megatrends, Early Warning, New Project)
+- All projects now created with simple form: Name (required) + Description (optional)
+- All projects default to `projectType: "new_project"` 
+- Why: Previous type options were misleading - all projects start empty and use same fallback system
+
+**New User Experience:**
+- No auto-created "My ORION Project" on first login (removed October 16, 2025)
+- Users start with clean slate - zero projects
+- Projects page shows "No projects yet" empty state with "Create Project" CTA
+- Users create projects only when ready (more intentional, less clutter)
+- Previous behavior: System auto-created empty "My ORION Project" that users didn't ask for
+
+**How Projects Work:**
+1. User creates project → starts empty (0 forces)
+2. Opens Scanning page → automatic fallback to global default project
+3. User sees all forces from global library (filtered by subscription tier)
+4. Can curate forces manually or upload custom CSV/Excel/JSON files
 
 ## External Dependencies
 

@@ -5,6 +5,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 import { validateStartupIntegrity as validateFixedLoaderIntegrity } from "./services/fixed-data-loader.js";
 import { validateStartupIntegrity as validateIntegrityValidator } from "./services/integrity-validator.js";
+import { databaseSeeder } from "./services/database-seeder.js";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -127,6 +128,11 @@ app.use((req, res, next) => {
     log('Ensuring default project invariant...');
     await storage.ensureDefaultProject();
     log('Default project invariant verified');
+    
+    // Auto-seed database if needed (production startup)
+    log('Checking database seed status...');
+    await databaseSeeder.seedIfNeeded();
+    log('Database seed check completed');
     
     // Fixed loader startup integrity validation
     log('Running fixed loader startup integrity validation...');
